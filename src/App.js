@@ -40,14 +40,17 @@ const camprops = [
 function Line({ start, end, bulletPos, meshPos }) {
   const ref = useRef();
 
-  const [endP, setEndP] = useState([0,0,0]);
+  const [endP, setEndP] = useState([0, 0, 0]);
 
-  
- 
-  useFrame(()=>{
-    if(setEndP===-2) {
+
+  useFrame(() => {
+    if (bulletPos[0] < -2 && bulletPos[0] > -2.05 && meshPos[0] === -2) {
       setEndP(bulletPos)
-      ref.current.geometry.setFromPoints([start, endP].map((point) => new THREE.Vector3(...point)));
+      ref.current.geometry.setFromPoints([start, bulletPos].map((point) => new THREE.Vector3(...point)));
+
+    }
+    else if (bulletPos[0] > 2 && bulletPos[0] < 2.005 && meshPos[0] === 2) {
+      ref.current.geometry.setFromPoints([start, bulletPos].map((point) => new THREE.Vector3(...point)));
     }
   })
   return (
@@ -62,7 +65,7 @@ function Cam(props) {
   const { scene } = useLoader(GLTFLoader, '/models/camera.glb');
   const { meshProps, lineEnd, rotationY, rotationZ, alignment, bulletPos } = props;
 
-  
+
 
   return (
     <mesh>
@@ -79,12 +82,18 @@ function Cam(props) {
 
 function Bullet(props) {
   const { meshProps, setBulletPos } = props;
+  const [flag, setflag] = useState(1);
+  const [random, setRandom] = useState(Math.random())
   const ref = useRef();
-
   useFrame((state, delta) => {
     ref.current.position.x += 2 * delta;
+    ref.current.position.y += 0.5 * flag * (random / 5) * delta;
     if (ref.current.position.x > 4) {
       ref.current.position.x = -4;
+      ref.current.position.y = 1;
+      setRandom(Math.random())
+      if (Math.random() < 0.5) setflag(-1)
+      else setflag(1)
     }
     setBulletPos([ref.current.position.x, ref.current.position.y, ref.current.position.z]);
   });
@@ -100,11 +109,16 @@ function Bullet(props) {
 function BulletTrack(props) {
   const { start, end, bulletPos, setTrackStart } = props;
   const ref = useRef();
+  useFrame(() => {
+    if (bulletPos[0] === -2)
+      setTrackStart(bulletPos);
+    ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
+  }, [bulletPos]);
 
 
 
   useFrame(() => {
-    if (bulletPos[0] < 2 && bulletPos[0] > -2)
+    if (bulletPos[0] < 2.01 && bulletPos[0] > -2.01)
       ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
     if (bulletPos[0] > -2) ref.current.visible = true
     else ref.current.visible = false
@@ -117,77 +131,77 @@ function BulletTrack(props) {
     </line>
   )
 }
-function Stick (props){
-  const {args} = props;
+function Stick(props) {
+  const { args } = props;
   const stick_model = useLoader(GLTFLoader, '/models/stick.glb');
-  return(
-    <mesh  scale={[0.5, 1.7, 0.5]} {...args}>
+  return (
+    <mesh scale={[0.5, 1.7, 0.5]} {...args}>
 
-      <primitive object={stick_model.scene.clone(true)}/>
+      <primitive object={stick_model.scene.clone(true)} />
     </mesh>
   )
 }
 
 
 const sticks = [{
-  position:[2.4,0,-2.18],
-  rotation: [Math.PI/2 ,0,0],
-  scale:[0.5, 1.77, 0.5],
+  position: [2.4, 0, -2.18],
+  rotation: [Math.PI / 2, 0, 0],
+  scale: [0.5, 1.77, 0.5],
 },
 {
-  position:[2.4,2.4,-2.18],
-  rotation: [Math.PI/2 ,0,0],
-  scale:[0.5, 1.77, 0.5],
+  position: [2.4, 2.4, -2.18],
+  rotation: [Math.PI / 2, 0, 0],
+  scale: [0.5, 1.77, 0.5],
 },
 {
-  position:[2.4,0.05,-2.12],
-  rotation: [0 ,0,0],
-  scale:[0.5, 0.92, 0.5] 
+  position: [2.4, 0.05, -2.12],
+  rotation: [0, 0, 0],
+  scale: [0.5, 0.92, 0.5]
 },
 {
-  position:[2.4,0.05,2.2],
-  rotation: [0 ,0,0],
-  scale:[0.5, 0.92, 0.5] 
+  position: [2.4, 0.05, 2.2],
+  rotation: [0, 0, 0],
+  scale: [0.5, 0.92, 0.5]
 },
 {
-  position:[-2.4,0,-2.18],
-  rotation: [Math.PI/2 ,0,0],
-  scale:[0.5, 1.77, 0.5],
+  position: [-2.4, 0, -2.18],
+  rotation: [Math.PI / 2, 0, 0],
+  scale: [0.5, 1.77, 0.5],
 },
 {
-  position:[-2.4,2.4,-2.18],
-  rotation: [Math.PI/2 ,0,0],
-  scale:[0.5, 1.77, 0.5]
+  position: [-2.4, 2.4, -2.18],
+  rotation: [Math.PI / 2, 0, 0],
+  scale: [0.5, 1.77, 0.5]
 },
 {
-  position:[-2.4,0.05,-2.12],
-  rotation: [0 ,0,0],
-  scale:[0.5, 0.92, 0.5] 
+  position: [-2.4, 0.05, -2.12],
+  rotation: [0, 0, 0],
+  scale: [0.5, 0.92, 0.5]
 },
 {
-  position:[-2.4,0.05,2.2],
-  rotation: [0 ,0,0],
-  scale:[0.5, 0.92, 0.5] 
+  position: [-2.4, 0.05, 2.2],
+  rotation: [0, 0, 0],
+  scale: [0.5, 0.92, 0.5]
 },
 {
-  position:[2.4,0,-2.12],
-  rotation: [0 ,0,Math.PI/2],
-  scale:[0.5, 1.90, 0.5]
+  position: [2.4, 0, -2.12],
+  rotation: [0, 0, Math.PI / 2],
+  scale: [0.5, 1.90, 0.5]
 },
 {
-  position:[2.4,0,2.2],
-  rotation: [0 ,0,Math.PI/2],
-  scale:[0.5, 1.90, 0.5]
+  position: [2.4, 0, 2.2],
+  rotation: [0, 0, Math.PI / 2],
+  scale: [0.5, 1.90, 0.5]
 },
 {
-  position:[2.4,2.4,-2.12],
-  rotation: [0 ,0,Math.PI/2],
-  scale:[0.5, 1.90, 0.5]
+  position: [2.4, 2.4, -2.12],
+  rotation: [0, 0, Math.PI / 2],
+  scale: [0.5, 1.90, 0.5]
 },
 {
-  position:[2.4,2.4,2.2],
-  rotation: [0 ,0,Math.PI/2],
-  scale:[0.5, 1.90, 0.5]
+  position: [2.4, 2.4, 2.2],
+  rotation: [0, 0, Math.PI / 2],
+  scale: [0.5, 1.90, 0.5]
 },
 ]
 function App() {
@@ -196,18 +210,15 @@ function App() {
   const [bulletPos, setBulletPos] = useState(initialBulletPos);
   const [trackStart, setTrackStart] = useState([-2, 1, 0]);
 
-  useEffect(() => {
-    if (bulletPos[0] === -2)
-      setTrackStart(bulletPos);
-  }, [bulletPos]);
+
 
   return (
     <div className="App">
       <Canvas frameloop="always" camera={{ position: [0, 0, 8] }}>
-      <directionalLight position={[10, 10, 5]} intensity={2} />
-      <directionalLight position={[-10, -10, -5]} intensity={1} />
+        <directionalLight position={[10, 10, 5]} intensity={2} />
+        <directionalLight position={[-10, -10, -5]} intensity={1} />
         <ambientLight args={[0xcccccc]} />
-        
+
         <mesh>
 
           {camprops.map((cam) => {
@@ -229,11 +240,11 @@ function App() {
           <Bullet setBulletPos={setBulletPos} meshProps={{
             position: bulletPos
           }} />
-          {bulletPos[0] > -2 ? <BulletTrack start={trackStart} end={bulletPos} bulletPos={bulletPos} /> : ""}
+          <BulletTrack start={trackStart} end={bulletPos} bulletPos={bulletPos} />
 
         </mesh>
-        {sticks.map((stick)=>{
-          return(
+        {sticks.map((stick) => {
+          return (
             <Stick
               args={{
                 ...stick
