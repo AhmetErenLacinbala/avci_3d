@@ -40,33 +40,16 @@ const camprops = [
 function Line({ start, end, bulletPos, meshPos }) {
   const ref = useRef();
 
+  const [endP, setEndP] = useState([0,0,0]);
 
-  useFrame(() => {
-    if (bulletPos[0] < 2 && bulletPos[0] > -2) {
-      if (meshPos[0] < 0 && bulletPos[0] < 0) {
-        ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
-      }
-      else if (meshPos[0] > 0 && bulletPos[0] > 0) {
-        ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
-      }
+  
+ 
+  useFrame(()=>{
+    if(setEndP===-2) {
+      setEndP(bulletPos)
+      ref.current.geometry.setFromPoints([start, endP].map((point) => new THREE.Vector3(...point)));
     }
-
-
-    if (meshPos[0] > 0) {
-      if (bulletPos[0] > 0) {
-        ref.current.visible = true
-      }
-    }
-    else if (meshPos[0] < 0) {
-      if (bulletPos[0] < 0) {
-        ref.current.visible = true
-      }
-    }
-
-    else ref.current.visible = false
-
   })
-
   return (
     <line ref={ref}>
       <bufferGeometry />
@@ -79,7 +62,7 @@ function Cam(props) {
   const { scene } = useLoader(GLTFLoader, '/models/camera.glb');
   const { meshProps, lineEnd, rotationY, rotationZ, alignment, bulletPos } = props;
 
-
+  
 
   return (
     <mesh>
@@ -96,7 +79,6 @@ function Cam(props) {
 
 function Bullet(props) {
   const { meshProps, setBulletPos } = props;
-
   const ref = useRef();
 
   useFrame((state, delta) => {
@@ -106,7 +88,6 @@ function Bullet(props) {
     }
     setBulletPos([ref.current.position.x, ref.current.position.y, ref.current.position.z]);
   });
-
 
   return (
     <mesh ref={ref} {...meshProps}>
@@ -136,7 +117,79 @@ function BulletTrack(props) {
     </line>
   )
 }
+function Stick (props){
+  const {args} = props;
+  const stick_model = useLoader(GLTFLoader, '/models/stick.glb');
+  return(
+    <mesh  scale={[0.5, 1.7, 0.5]} {...args}>
 
+      <primitive object={stick_model.scene.clone(true)}/>
+    </mesh>
+  )
+}
+
+
+const sticks = [{
+  position:[2.4,0,-2.18],
+  rotation: [Math.PI/2 ,0,0],
+  scale:[0.5, 1.77, 0.5],
+},
+{
+  position:[2.4,2.4,-2.18],
+  rotation: [Math.PI/2 ,0,0],
+  scale:[0.5, 1.77, 0.5],
+},
+{
+  position:[2.4,0.05,-2.12],
+  rotation: [0 ,0,0],
+  scale:[0.5, 0.92, 0.5] 
+},
+{
+  position:[2.4,0.05,2.2],
+  rotation: [0 ,0,0],
+  scale:[0.5, 0.92, 0.5] 
+},
+{
+  position:[-2.4,0,-2.18],
+  rotation: [Math.PI/2 ,0,0],
+  scale:[0.5, 1.77, 0.5],
+},
+{
+  position:[-2.4,2.4,-2.18],
+  rotation: [Math.PI/2 ,0,0],
+  scale:[0.5, 1.77, 0.5]
+},
+{
+  position:[-2.4,0.05,-2.12],
+  rotation: [0 ,0,0],
+  scale:[0.5, 0.92, 0.5] 
+},
+{
+  position:[-2.4,0.05,2.2],
+  rotation: [0 ,0,0],
+  scale:[0.5, 0.92, 0.5] 
+},
+{
+  position:[2.4,0,-2.12],
+  rotation: [0 ,0,Math.PI/2],
+  scale:[0.5, 1.90, 0.5]
+},
+{
+  position:[2.4,0,2.2],
+  rotation: [0 ,0,Math.PI/2],
+  scale:[0.5, 1.90, 0.5]
+},
+{
+  position:[2.4,2.4,-2.12],
+  rotation: [0 ,0,Math.PI/2],
+  scale:[0.5, 1.90, 0.5]
+},
+{
+  position:[2.4,2.4,2.2],
+  rotation: [0 ,0,Math.PI/2],
+  scale:[0.5, 1.90, 0.5]
+},
+]
 function App() {
 
   const initialBulletPos = [-4, 1, 0];
@@ -144,7 +197,6 @@ function App() {
   const [trackStart, setTrackStart] = useState([-2, 1, 0]);
 
   useEffect(() => {
-    console.log("hello");
     if (bulletPos[0] === -2)
       setTrackStart(bulletPos);
   }, [bulletPos]);
@@ -152,8 +204,10 @@ function App() {
   return (
     <div className="App">
       <Canvas frameloop="always" camera={{ position: [0, 0, 8] }}>
+      <directionalLight position={[10, 10, 5]} intensity={2} />
+      <directionalLight position={[-10, -10, -5]} intensity={1} />
         <ambientLight args={[0xcccccc]} />
-
+        
         <mesh>
 
           {camprops.map((cam) => {
@@ -178,6 +232,16 @@ function App() {
           {bulletPos[0] > -2 ? <BulletTrack start={trackStart} end={bulletPos} bulletPos={bulletPos} /> : ""}
 
         </mesh>
+        {sticks.map((stick)=>{
+          return(
+            <Stick
+              args={{
+                ...stick
+
+              }}
+            />
+          )
+        })}
         <OrbitControls />
       </Canvas>
     </div>
