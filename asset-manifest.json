@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/avci_3d/static/css/main.12b2c60b.css",
-    "main.js": "/avci_3d/static/js/main.51833dcd.js",
-    "static/js/787.4aeb5330.chunk.js": "/avci_3d/static/js/787.4aeb5330.chunk.js",
-    "index.html": "/avci_3d/index.html",
-    "main.12b2c60b.css.map": "/avci_3d/static/css/main.12b2c60b.css.map",
-    "main.51833dcd.js.map": "/avci_3d/static/js/main.51833dcd.js.map",
-    "787.4aeb5330.chunk.js.map": "/avci_3d/static/js/787.4aeb5330.chunk.js.map"
+    "main.css": "/avci_3d/build/static/css/main.12b2c60b.css",
+    "main.js": "/avci_3d/build/static/js/main.2c014bbd.js",
+    "static/js/787.4aeb5330.chunk.js": "/avci_3d/build/static/js/787.4aeb5330.chunk.js",
+    "index.html": "/avci_3d/build/index.html",
+    "main.12b2c60b.css.map": "/avci_3d/build/static/css/main.12b2c60b.css.map",
+    "main.2c014bbd.js.map": "/avci_3d/build/static/js/main.2c014bbd.js.map",
+    "787.4aeb5330.chunk.js.map": "/avci_3d/build/static/js/787.4aeb5330.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.12b2c60b.css",
-    "static/js/main.51833dcd.js"
+    "static/js/main.2c014bbd.js"
   ]
 }
