@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/avci_3d/static/css/main.12b2c60b.css",
-    "main.js": "/avci_3d/static/js/main.fdc6e29b.js",
+    "main.js": "/avci_3d/static/js/main.faa85d24.js",
     "static/js/787.4aeb5330.chunk.js": "/avci_3d/static/js/787.4aeb5330.chunk.js",
     "index.html": "/avci_3d/index.html",
     "main.12b2c60b.css.map": "/avci_3d/static/css/main.12b2c60b.css.map",
-    "main.fdc6e29b.js.map": "/avci_3d/static/js/main.fdc6e29b.js.map",
+    "main.faa85d24.js.map": "/avci_3d/static/js/main.faa85d24.js.map",
     "787.4aeb5330.chunk.js.map": "/avci_3d/static/js/787.4aeb5330.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.12b2c60b.css",
-    "static/js/main.fdc6e29b.js"
+    "static/js/main.faa85d24.js"
   ]
 }
