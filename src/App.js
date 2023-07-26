@@ -1,7 +1,7 @@
-
 import './App.css';
+
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Sphere, SpotLight } from '@react-three/drei'
+import { OrbitControls, Sphere, SpotLight, meshBounds } from '@react-three/drei'
 import { DoubleSide } from 'three';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three'
@@ -42,21 +42,30 @@ function Line({ start, end, bulletPos, meshPos }) {
 
   const [endP, setEndP] = useState([0, 0, 0]);
 
+  useEffect(()=>{
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.LineBasicMaterial({
+      color: 0xff0000
+    });
+    ref.current.material = material;
+    ref.current.geometry =  geometry;
+  
+  },[])
 
   useFrame(() => {
-    if (bulletPos[0] < -2 && bulletPos[0] > -2.05 && meshPos[0] === -2) {
-      setEndP(bulletPos)
-      ref.current.geometry.setFromPoints([start, bulletPos].map((point) => new THREE.Vector3(...point)));
 
+
+    if (bulletPos[0] < -2 && bulletPos[0] > -2.05 && meshPos[0] === -2) {
+
+      ref.current.geometry.setFromPoints([start, bulletPos].map((point) => new THREE.Vector3(...point)));
     }
-    else if (bulletPos[0] > 2 && bulletPos[0] < 2.005 && meshPos[0] === 2) {
+    else if (bulletPos[0] > 2 && bulletPos[0] < 2.05 && meshPos[0] === 2) {
+
       ref.current.geometry.setFromPoints([start, bulletPos].map((point) => new THREE.Vector3(...point)));
     }
   })
   return (
     <line ref={ref}>
-      <bufferGeometry />
-      <lineBasicMaterial color="hotpink" />
     </line>
   )
 }
@@ -85,6 +94,8 @@ function Bullet(props) {
   const [flag, setflag] = useState(1);
   const [random, setRandom] = useState(Math.random())
   const ref = useRef();
+  const inRef = useRef();
+  const outRef = useRef();
   useFrame((state, delta) => {
     ref.current.position.x += 2 * delta;
     ref.current.position.y += 0.5 * flag * (random / 5) * delta;
@@ -95,39 +106,72 @@ function Bullet(props) {
       if (Math.random() < 0.5) setflag(-1)
       else setflag(1)
     }
+    
     setBulletPos([ref.current.position.x, ref.current.position.y, ref.current.position.z]);
+    if (Math.floor(ref.current.position.x*20)/20 === -2){
+      inRef.current.position.set(...ref.current.position);
+      inRef.current.position.x -= 0.03;
+    }
+    else if (Math.floor(ref.current.position.x*20)/20 === 2) {
+      outRef.current.position.set(...ref.current.position);
+    }
+    if(ref.current.position.x <-2){
+      outRef.current.visible = false;
+      inRef.current.visible = false;
+    }
+    else if (Math.floor(ref.current.position.x*20)/20 === -2) {
+      inRef.current.visible = true;
+    }
+
+    else if (Math.floor(ref.current.position.x*20)/20 === 2) {
+      outRef.current.visible = true;
+    }
   });
 
   return (
+    <mesh>
+
     <mesh ref={ref} {...meshProps}>
       <sphereGeometry args={[0.05, 16, 16]} />
       <meshBasicMaterial color={0x00ffff} wireframe />
     </mesh>
+    <mesh ref={inRef}>
+      <sphereGeometry args={[0.05, 16, 16]} />
+      <meshBasicMaterial color={0x00ff} wireframe />
+    </mesh>
+    <mesh ref={outRef}>
+    <sphereGeometry args={[0.05, 16, 16]} />
+      <meshBasicMaterial color={0x00ff} wireframe />
+    </mesh>
+    </mesh>
   )
 }
-
 function BulletTrack(props) {
-  const { start, end, bulletPos, setTrackStart } = props;
+  const { start, end, setTrackStart } = props;
   const ref = useRef();
+
+  useEffect(()=>{
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.LineBasicMaterial({
+      color: 0xff0000
+    });
+    ref.current.material = material;
+    ref.current.geometry =  geometry;
+  
+  },[])
+
   useFrame(() => {
-    if (bulletPos[0] === -2)
-      setTrackStart(bulletPos);
-    ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
-  }, [bulletPos]);
+    if (end[0] <-2){
+      setTrackStart(end);
 
-
-
-  useFrame(() => {
-    if (bulletPos[0] < 2.01 && bulletPos[0] > -2.01)
+    }
+    else if(end[0] < 2){
       ref.current.geometry.setFromPoints([start, end].map((point) => new THREE.Vector3(...point)));
-    if (bulletPos[0] > -2) ref.current.visible = true
-    else ref.current.visible = false
-  })
+    }
+  },);
 
   return (
     <line ref={ref}>
-      <bufferGeometry />
-      <lineBasicMaterial color="hotpink" />
     </line>
   )
 }
@@ -138,6 +182,33 @@ function Stick(props) {
     <mesh scale={[0.5, 1.7, 0.5]} {...args}>
 
       <primitive object={stick_model.scene.clone(true)} />
+    </mesh>
+  )
+}
+
+function BulletPoint(props){
+  const {location} = props;
+  const ref = useRef(null);
+
+  useEffect(()=>{
+    const geometry = new THREE.SphereGeometry({
+      radius : 1
+    });
+    const material = new THREE.MeshBasicMaterial({
+      color:0x0000ff
+    });
+    ref.current.material = material;
+    ref.current.geometry = geometry;
+  },[]);
+
+  useFrame(()=>{
+    if(location[0]>0)
+    console.log(ref.current);
+    ref.current.position.set(new THREE.Vector3(0,0,0));
+  })
+
+  return(
+    <mesh ref={ref}>
     </mesh>
   )
 }
@@ -240,7 +311,7 @@ function App() {
           <Bullet setBulletPos={setBulletPos} meshProps={{
             position: bulletPos
           }} />
-          <BulletTrack start={trackStart} end={bulletPos} bulletPos={bulletPos} />
+          <BulletTrack setTrackStart={setTrackStart} start={trackStart} end={bulletPos} />
 
         </mesh>
         {sticks.map((stick) => {
