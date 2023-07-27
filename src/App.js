@@ -1,36 +1,37 @@
 import './App.css';
 
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Sphere, SpotLight, meshBounds } from '@react-three/drei'
+import { OrbitControls, Sphere, SpotLight, meshBounds, useHelper } from '@react-three/drei'
 import { DoubleSide } from 'three';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three'
 import React from 'react';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { AmbientLight } from 'three';
-
+import { Bloom, EffectComposer, SSAO } from '@react-three/postprocessing'
+import { BlurPass, Resizer, KernelSize, Resolution } from 'postprocessing'
 
 const camprops = [
   {
-    pos: [2, 2, 2],
+    pos: [2, 2.1, 1.9],
     rotationY: -Math.PI / 2,
     rotationZ: Math.PI / 2,
     alignment: [-1, -1],
   },
   {
-    pos: [-2, 2, -2],
+    pos: [-2, 2.1, -1.9],
     rotationY: Math.PI / 2,
     rotationZ: 0,
     alignment: [-1, 1],
   },
   {
-    pos: [-2, 2, 2],
+    pos: [-2, 2.1, 1.9],
     rotationY: -Math.PI / 2,
     rotationZ: Math.PI / 2,
     alignment: [-1, -1],
   },
   {
-    pos: [2, 2, -2],
+    pos: [2, 2.1, -1.9],
     rotationY: Math.PI / 2,
     rotationZ: 0,
     alignment: [-1, 1],
@@ -71,6 +72,7 @@ function Line({ start, end, bulletPos, meshPos }) {
 }
 
 function Cam(props) {
+  //https://raw.githubusercontent.com/AhmetErenLacinbala/avci_3d/master/public/models/camera.glb
   const { scene } = useLoader(GLTFLoader, '/models/camera.glb');
   const { meshProps, lineEnd, rotationY, rotationZ, alignment, bulletPos } = props;
 
@@ -133,7 +135,7 @@ function Bullet(props) {
 
     <mesh ref={ref} {...meshProps}>
       <sphereGeometry args={[0.05, 16, 16]} />
-      <meshBasicMaterial color={0x00ffff} wireframe />
+      <meshStandardMaterial metalness={0.9} color={'gray'} />
     </mesh>
     <mesh ref={inRef}>
       <sphereGeometry args={[0.05, 16, 16]} />
@@ -176,8 +178,37 @@ function BulletTrack(props) {
   )
 }
 function Stick(props) {
+  //https://raw.githubusercontent.com/AhmetErenLacinbala/avci_3d/master/public/models/stick.glb
   const { args } = props;
   const stick_model = useLoader(GLTFLoader, '/models/stick.glb');
+  return (
+    <mesh scale={[0.5, 1.7, 0.5]} {...args}>
+
+      <primitive object={stick_model.scene.clone(true)} />
+    </mesh>
+  )
+}
+
+function LightStick(props) {
+  //https://raw.githubusercontent.com/AhmetErenLacinbala/avci_3d/master/public/models/stick.glb
+  const { args } = props;
+  const stick_model = useLoader(GLTFLoader, '/models/light.glb');
+  return (
+    <mesh rotation={[-Math.PI/2, Math.PI ,0]} {...args}>
+
+      <primitive object={stick_model.scene.clone(true)} />
+      <mesh >
+      <rectAreaLight args={[0xffffff, 1, 2,0.01]} position={[0,2,-0.02]} power={50} rotation={[0,0,Math.PI/2]}/>
+      </mesh>
+    </mesh>
+  )
+}
+
+
+function Plane(props) {
+  //https://raw.githubusercontent.com/AhmetErenLacinbala/avci_3d/master/public/models/stick.glb
+  const { args } = props;
+  const stick_model = useLoader(GLTFLoader, '/models/plane.glb');
   return (
     <mesh scale={[0.5, 1.7, 0.5]} {...args}>
 
@@ -275,6 +306,35 @@ const sticks = [{
   scale: [0.5, 1.90, 0.5]
 },
 ]
+
+const stickLights = [{
+   position:[2.0,0.05,2]
+},
+{
+  position:[2.01,0.08,2.01],
+  rotation: [0,0,0],
+  scale: [1, 0.45,1]
+},
+{
+  position:[2.0,0.08,-1.9],
+  rotation: [0,Math.PI,0],
+  scale: [1, 0.45,1]
+},
+{
+position:[-2.0,0.05,1.95]
+},
+{
+  position:[-1.99,0.08,1.96],
+  rotation: [0,0,0],
+  scale: [1, 0.45,1]
+},
+{
+  position:[-2.0,0.08,-1.95],
+  rotation: [0,Math.PI,0],
+  scale: [1, 0.45,1]
+},
+
+]
 function App() {
 
   const initialBulletPos = [-4, 1, 0];
@@ -286,10 +346,8 @@ function App() {
   return (
     <div className="App">
       <Canvas frameloop="always" camera={{ position: [0, 0, 8] }}>
-        <directionalLight position={[10, 10, 5]} intensity={2} />
-        <directionalLight position={[-10, -10, -5]} intensity={1} />
-        <ambientLight args={[0xcccccc]} />
-
+      <Plane/>
+    <ambientLight args={["0x404040", "4"]}/>
         <mesh>
 
           {camprops.map((cam) => {
@@ -307,6 +365,13 @@ function App() {
               />
             )
           })}
+          {stickLights.map((stickLight =>{
+            return (
+              <group position={[0,-0.02,0]}>
+              <LightStick args={stickLight}/>
+              </group>
+            )
+          }))}
 
           <Bullet setBulletPos={setBulletPos} meshProps={{
             position: bulletPos
@@ -316,14 +381,32 @@ function App() {
         </mesh>
         {sticks.map((stick) => {
           return (
+            
+
             <Stick
               args={{
                 ...stick
 
               }}
             />
+           
           )
         })}
+        <Suspense fallback={null}>
+          <EffectComposer >
+            <Bloom
+    intensity={1.0} // The bloom intensity.
+    blurPass={undefined} // A blur pass.
+    kernelSize={KernelSize.LARGE} // blur kernel size
+    luminanceThreshold={0.9} // luminance threshold. Raise this value to mask out darker elements in the scene.
+    luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
+    mipmapBlur={false} // Enables or disables mipmap blur.
+    resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
+    resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
+             />
+
+          </EffectComposer>
+        </Suspense>
         <OrbitControls />
       </Canvas>
     </div>
